@@ -84,6 +84,8 @@ WorkBuddy-DevTop 部署信息
 🔑 用户名: ${CUSTOM_USER}
 🔑 密码: ${PASSWORD}
 
+视频：https://www.bilibili.com/video/BV1zCTj6YE6o/
+
 🐳 容器名: workbuddy-devtop
 🐳 镜像: docker.cnb.cool/fuliai/devtop/base:v1.6
 
