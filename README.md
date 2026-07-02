@@ -41,7 +41,40 @@ AI 会读取 [DEPLOY.md](DEPLOY.md) 自动完成部署并生成访问链接。�
 - 2核 CPU / 4GB 内存（推荐 4核 / 8GB）
 - 5GB+ 可用磁盘
 
-### 三步启动
+### 方式一：在新的 WorkBuddy 环境中部署（推荐）
+
+当你在一个**全新的 WorkBuddy / CloudStudio 沙箱环境**中（本地没有仓库代码），只需告诉 AI：
+
+> **帮我部署 https://cnb.cool/aican.do/workbuddy-devtop**
+
+AI 会自动读取仓库中的 [DEPLOY.md](DEPLOY.md)，执行以下操作：
+
+1. 克隆仓库到 `/workspace`
+2. `docker compose up -d` 启动容器
+3. 健康检查（轮询 HTTP 3000 端口就绪）
+4. 自动检测当前环境，生成可访问的 URL
+5. 输出访问链接和登录凭据
+
+**也可以手动执行：**
+
+```bash
+cd /workspace
+git clone https://cnb.cool/aican.do/workbuddy-devtop.git
+cd workbuddy-devtop
+docker compose up -d
+```
+
+等待 15-30 秒后，根据环境获取访问地址：
+
+```bash
+# CloudStudio 沙箱环境
+echo "https://webview.e2b.${X_IDE_PREVIEW_DOMAIN}/?x-cs-sandbox-id=${X_IDE_SPACE_KEY}&x-cs-sandbox-port=3000"
+
+# 本地或其他服务器
+echo "http://localhost:3000"
+```
+
+### 方式二：本地直接部署
 
 ```bash
 # 1. 克隆仓库

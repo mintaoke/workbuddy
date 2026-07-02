@@ -1,6 +1,30 @@
 # AI 部署指南 — WorkBuddy-DevTop
 
-> **本文件供 AI Agent 读取执行。** 当用户要求部署 workbuddy-devtop 时，AI 按本文件步骤操作即可完成部署并生成访问链接。
+> **本文件供 AI Agent 读取执行。** 当用户要求部署 workbuddy-devtop 时，AI 按以下步骤操作即可完成部署并生成访问链接。
+
+---
+
+## 适用场景
+
+- **WorkBuddy / CloudStudio 沙箱环境**：用户在一个全新的远程虚拟环境中，需要通过 AI 部署桌面
+- **本地服务器**：用户在有 Docker 的本地机器上手动部署
+- **其他容器环境**：任何支持 Docker 的 Linux 环境
+
+## 前置条件检查
+
+开始前先确认环境：
+
+```bash
+# 确认 Docker 可用
+docker --version
+docker compose version
+
+# 确认 /workspace 目录存在（WorkBuddy 环境通常有）
+ls -d /workspace 2>/dev/null
+
+# 检测是否为 CloudStudio 沙箱环境
+echo "X_IDE_SPACE_KEY=${X_IDE_SPACE_KEY:-未设置}"
+```
 
 ---
 
@@ -14,7 +38,7 @@ git clone https://cnb.cool/aican.do/workbuddy-devtop.git
 cd workbuddy-devtop
 ```
 
-如果 `/workspace` 目录已有同名文件夹，直接进入即可。
+> 如果 `/workspace/workbuddy-devtop` 已存在，直接 `cd /workspace/workbuddy-devtop` 并 `git pull` 更新。
 
 ### 第 2 步：启动容器
 
@@ -42,25 +66,30 @@ done
 
 根据部署环境生成对应的访问 URL：
 
-#### 环境 A：CloudStudio 沙箱（自动检测）
-
 ```bash
+# 自动检测环境并生成访问链接
 if [ -n "$X_IDE_SPACE_KEY" ]; then
+  # CloudStudio 沙箱环境
   ACCESS_URL="https://webview.e2b.${X_IDE_PREVIEW_DOMAIN}/?x-cs-sandbox-id=${X_IDE_SPACE_KEY}&x-cs-sandbox-port=3000"
+else
+  # 本地或其他服务器环境
+  ACCESS_URL="http://localhost:3000"
 fi
+echo "$ACCESS_URL"
 ```
 
-#### 环境 B：本地 / 其他服务器
+**环境说明：**
 
-```bash
-ACCESS_URL="http://localhost:3000"
-# 或替换为服务器公网 IP
-# ACCESS_URL="http://<服务器IP>:3000"
-```
+| 环境 | 检测条件 | 访问 URL 格式 |
+|---|---|---|
+| CloudStudio 沙箱 | `$X_IDE_SPACE_KEY` 存在 | `https://webview.e2b.<域名>/?x-cs-sandbox-id=<ID>&x-cs-sandbox-port=3000` |
+| 本地服务器 | 无该环境变量 | `http://localhost:3000` 或 `http://<服务器IP>:3000` |
+
+> ⚠️ CloudStudio 沙箱环境必须绑定 `0.0.0.0:3000:3000`（docker-compose.yml 默认已配置），否则反向代理无法到达容器。
 
 ### 第 5 步：输出部署信息
 
-向用户展示：
+向用户展示以下信息：
 
 ```
 ✅ WorkBuddy-DevTop 部署完成！
@@ -70,6 +99,7 @@ ACCESS_URL="http://localhost:3000"
 🔑 密码：GHT8xU0rvraxMxqjozwF
 
 💡 首次加载约需 10-20 秒，请耐心等待。
+💡 建议修改默认密码：编辑 docker-compose.yml 中的 PASSWORD 后重启。
 ```
 
 ---
