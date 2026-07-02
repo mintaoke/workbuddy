@@ -1,0 +1,17 @@
+# 容器运行时数据（自动生成，不纳入版本控制）
+config/
+
+# Claude Code / CodeBuddy 工作目录
+.codebuddy/
+
+# 系统文件
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# 临时文件
+*.tmp
+*.log
+*.pid

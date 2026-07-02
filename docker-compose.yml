@@ -1,0 +1,26 @@
+---
+# workbuddy-devtop — WorkBuddy 开发桌面环境
+# 基于 devtop base 镜像，适配 CloudStudio 沙箱环境
+services:
+  workbuddy-devtop:
+    image: docker.cnb.cool/fuliai/devtop/base:v1.6
+    container_name: workbuddy-devtop
+    security_opt:
+      - seccomp:unconfined
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Asia/Shanghai
+      - CUSTOM_USER=admin
+      - PASSWORD=GHT8xU0rvraxMxqjozwF
+      - LC_ALL=zh_CN.UTF-8
+    volumes:
+      - ./config:/config
+      - /workspace:/workspace              # 挂载宿主 workspace，桌面内可见宿主文件
+      - /var/run/docker.sock:/var/run/docker.sock  # 共享宿主 Docker
+      - ./devtop-init-fix.sh:/custom-cont-init.d/devtop-init-fix.sh:ro  # 启动时自动修复环境兼容问题
+    ports:
+      - 0.0.0.0:3000:3000
+      - 0.0.0.0:3001:3001
+    shm_size: "5gb"
+    restart: unless-stopped
