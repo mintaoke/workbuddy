@@ -1,6 +1,9 @@
 ---
 # workbuddy-devtop — WorkBuddy 开发桌面环境
 # 基于 devtop base 镜像，适配 CloudStudio 沙箱环境
+#
+# 密码通过 .env 文件注入，首次部署由 deploy.sh 自动生成随机密码。
+# 手动部署请先运行: bash deploy.sh
 services:
   workbuddy-devtop:
     image: docker.cnb.cool/fuliai/devtop/base:v1.6
@@ -11,8 +14,8 @@ services:
       - PUID=1000
       - PGID=1000
       - TZ=Asia/Shanghai
-      - CUSTOM_USER=admin
-      - PASSWORD=GHT8xU0rvraxMxqjozwF
+      - CUSTOM_USER=${CUSTOM_USER:-admin}
+      - PASSWORD=${PASSWORD}
       - LC_ALL=zh_CN.UTF-8
     volumes:
       - ./config:/config

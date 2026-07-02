@@ -81,11 +81,8 @@ echo "http://localhost:3000"
 git clone https://cnb.cool/aican.do/workbuddy-devtop.git
 cd workbuddy-devtop
 
-# 2. 按需修改密码（可选）
-# 编辑 docker-compose.yml 中的 PASSWORD 环境变量
-
-# 3. 启动
-docker compose up -d
+# 2. 运行部署脚本（自动生成随机密码并启动）
+bash deploy.sh
 ```
 
 启动���访问 **http://localhost:3000**，输入用户名密码即可进入桌面。
@@ -99,14 +96,16 @@ docker compose up -d
 
 > ⚠️ 推荐使用 HTTP (3000) 而非 HTTPS (3001)，避免自签名证书问题。
 
-### 默认凭据
+### 登录凭据
 
 | 项目 | 值 |
 |---|---|
 | 用户名 | `admin` |
-| 密码 | `GHT8xU0rvraxMxqjozwF` |
+| 密码 | 首次部署由 `deploy.sh` 随机生成，保存在 `.env` 文件中 |
 
-> 🔔 **请务必修改默认密码！** 编辑 `docker-compose.yml` 中的 `PASSWORD` 变量后重启容器。
+> 🔔 运行 `bash deploy.sh` 后终端会直接显示密码。查看已部署的密码：`cat .env` 或 `cat deploy-info.txt`
+>
+> 如需手动指定密码：编辑 `.env` 文件中的 `PASSWORD=xxx`，然后 `docker compose down && docker compose up -d`
 
 ---
 
@@ -117,6 +116,7 @@ workbuddy-devtop/
 ├── docker-compose.yml              # 核心部署配置
 ├── devtop-init-fix.sh              # 启动时自动修复脚本（挂载到 /custom-cont-init.d/）
 ├── devtop-hotfix.sh                # 一次性运行时热修复脚本（手动执行）
+├── deploy.sh                       # 一键部署脚本（自动生成随机密码、启动、输出信息）
 ├── DEPLOY.md                       # AI 部署指南（供 AI Agent 读取执行）
 ├── webtop-env.md                   # 中文输入法使用说明（桌面快捷方式指向）
 ├── deploy-info.txt                 # 快速参考信息卡
@@ -137,7 +137,7 @@ workbuddy-devtop/
 |---|---|---|
 | `image` | 镜像地址 | `docker.cnb.cool/fuliai/devtop/base:v1.6` |
 | `CUSTOM_USER` | 登录用户名 | `admin` |
-| `PASSWORD` | 登录密码 | `GHT8xU0rvraxMxqjozwF` |
+| `PASSWORD` | 登录密码 | 首次部署由 `deploy.sh` 随机生成 |
 | `PUID` / `PGID` | 容器内用户 UID/GID | `1000` / `1000` |
 | `TZ` | 时区 | `Asia/Shanghai` |
 | `LC_ALL` | 语言环境 | `zh_CN.UTF-8` |

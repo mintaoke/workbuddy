@@ -11,6 +11,10 @@ Thumbs.db
 *.swo
 *~
 
+# 部署信息文件（每次部署自动生成，含密码等敏感信息）
+deploy-info.txt
+.env
+
 # 内部分析文档（不纳入仓库）
 devtop-optimization-report.md
 webtop-deploy-experience.md
