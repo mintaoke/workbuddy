@@ -23,6 +23,16 @@
 
 ---
 
+## 🤖 AI 一键部署
+
+如果是在 WorkBuddy / CloudStudio 等 AI 环境中部署，直接把仓库地址发给 AI 即可：
+
+> 帮我部署 https://cnb.cool/aican.do/workbuddy-devtop
+
+AI 会读取 [DEPLOY.md](DEPLOY.md) 自动完成部署并生成访问链接。详见 [DEPLOY.md](DEPLOY.md)。
+
+---
+
 ## 🚀 快速开始
 
 ### 前置要求
@@ -74,6 +84,7 @@ workbuddy-devtop/
 ├── docker-compose.yml              # 核心部署配置
 ├── devtop-init-fix.sh              # 启动时自动修复脚本（挂载到 /custom-cont-init.d/）
 ├── devtop-hotfix.sh                # 一次性运行时热修复脚本（手动执行）
+├── DEPLOY.md                       # AI 部署指南（供 AI Agent 读取执行）
 ├── webtop-env.md                   # 中文输入法使用说明（桌面快捷方式指向）
 ├── deploy-info.txt                 # 快速参考信息卡
 ├── .gitignore
