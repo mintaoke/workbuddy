@@ -27,6 +27,8 @@
 
 如果是在 WorkBuddy / CloudStudio 等 AI 环境中部署，直接把仓库地址发给 AI 即可：
 
+### 注意需要在 WorkBuddy 的【项目】会话中运行才行。
+
 > 帮我部署 https://cnb.cool/aican.do/workbuddy-devtop，用里面的DEPLOY.md来部署。
 
 AI 会读取 [DEPLOY.md](DEPLOY.md) 自动完成部署并生成访问链接。详见 [DEPLOY.md](DEPLOY.md)。
