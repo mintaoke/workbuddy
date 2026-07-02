@@ -11,6 +11,10 @@ Thumbs.db
 *.swo
 *~
 
+# 内部分析文档（不纳入仓库）
+devtop-optimization-report.md
+webtop-deploy-experience.md
+
 # 临时文件
 *.tmp
 *.log

@@ -75,8 +75,6 @@ workbuddy-devtop/
 ├── devtop-init-fix.sh              # 启动时自动修复脚本（挂载到 /custom-cont-init.d/）
 ├── devtop-hotfix.sh                # 一次性运行时热修复脚本（手动执行）
 ├── webtop-env.md                   # 中文输入法使用说明（桌面快捷方式指向）
-├── devtop-optimization-report.md   # 镜像深度检查与优化建议报告
-├── webtop-deploy-experience.md     # CloudStudio 沙箱部署经验文档
 ├── deploy-info.txt                 # 快速参考信息卡
 ├── .gitignore
 ├── LICENSE
@@ -162,8 +160,6 @@ docker compose pull && docker compose up -d
 4. **docker.sock**：沙箱宿主的 Docker 可通过挂载 `/var/run/docker.sock` 直接使用
 5. **userns-remap**：沙箱宿主启用了用户重映射，init 脚本会自动处理
 
-详细经验参考 [webtop-deploy-experience.md](webtop-deploy-experience.md)。
-
 ---
 
 ## 🇨🇳 中文输入法
@@ -236,8 +232,6 @@ sqlite3, postgresql-client, mariadb-client, redis-tools
 
 | 文档 | 说明 |
 |---|---|
-| [devtop-optimization-report.md](devtop-optimization-report.md) | 镜像深度检查报告与优化迭代方案 |
-| [webtop-deploy-experience.md](webtop-deploy-experience.md) | CloudStudio 沙箱部署经验总结 |
 | [webtop-env.md](webtop-env.md) | 中文输入法使用说明 |
 
 ---
