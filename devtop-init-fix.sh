@@ -108,65 +108,35 @@ fi
 
 # 安装 VS Code 图标（解决桌面快捷方式图标显示问题）
 echo "[devtop-init-fix] 安装 VS Code 图标..."
-VSCODE_SVG_URL="https://raw.githubusercontent.com/microsoft/vscode/main/resources/linux/code.svg"
-VSCODE_SVG="/usr/share/icons/hicolor/scalable/apps/code.svg"
 mkdir -p /usr/share/icons/hicolor/scalable/apps
 mkdir -p /usr/share/pixmaps
 
-if curl -fsSL -A "Mozilla/5.0" -o "$VSCODE_SVG" "$VSCODE_SVG_URL" 2>/dev/null; then
-    cp "$VSCODE_SVG" /usr/share/pixmaps/code.svg
-else
-    echo "[devtop-init-fix] SVG 图标下载失败，尝试从已安装包复制..."
-    INSTALLED_ICON="/usr/share/pixmaps/vscode.png"
-    [ -f "/usr/share/code/resources/app/resources/linux/code.png" ] && \
-        cp "/usr/share/code/resources/app/resources/linux/code.png" /usr/share/pixmaps/code.png || true
+# 优先从 VS Code 安装包获取图标（最可靠，无需网络）
+ICON_SRC=""
+if [ -f "/usr/share/pixmaps/vscode.png" ]; then
+    ICON_SRC="/usr/share/pixmaps/vscode.png"
+elif [ -f "/usr/share/code/resources/app/resources/linux/code.png" ]; then
+    ICON_SRC="/usr/share/code/resources/app/resources/linux/code.png"
 fi
 
-# 确保 cairosvg 可用（用于 SVG 转 PNG）
-if ! python3 -c "import cairosvg" 2>/dev/null; then
-    echo "[devtop-init-fix] 安装 cairosvg..."
-    pip install cairosvg --quiet 2>/dev/null || true
-fi
-
-python3 - << 'PY'
+if [ -n "$ICON_SRC" ]; then
+    echo "[devtop-init-fix] 使用内置图标: ${ICON_SRC}"
+    python3 - << PY
 import os
-try:
-    import cairosvg
-    CAIRO = True
-except ImportError:
-    CAIRO = False
-
-try:
-    from PIL import Image
-except ImportError:
-    Image = None
-
-src = '/usr/share/icons/hicolor/scalable/apps/code.svg'
-img_rgba = None
-
-if CAIRO and Image and os.path.exists(src):
-    tmp_png = '/tmp/vscode-src.png'
-    try:
-        cairosvg.svg2png(url=src, write_to=tmp_png, output_width=512, output_height=512)
-        img_rgba = Image.open(tmp_png).convert('RGBA')
-    except Exception as e:
-        print(f"[devtop-init-fix] SVG 转 PNG 失败: {e}")
-
-if img_rgba is not None:
-    sizes = [16, 22, 24, 32, 36, 48, 64, 72, 96, 128, 192, 256, 512]
-    for size in sizes:
-        outdir = f'/usr/share/icons/hicolor/{size}x{size}/apps'
-        os.makedirs(outdir, exist_ok=True)
-        resized = img_rgba.resize((size, size), getattr(Image, 'LANCZOS', Image.Resampling.LANCZOS if hasattr(Image, 'Resampling') else Image.ANTIALIAS))
-        resized.save(f'{outdir}/code.png', 'PNG')
-    pixmaps = '/usr/share/pixmaps'
-    os.makedirs(pixmaps, exist_ok=True)
-    img_rgba.resize((128, 128), getattr(Image, 'LANCZOS', Image.Resampling.LANCZOS if hasattr(Image, 'Resampling') else Image.ANTIALIAS)).save(f'{pixmaps}/code.png', 'PNG')
-    os.system('update-icon-caches /usr/share/icons/hicolor 2>/dev/null')
-    print("[devtop-init-fix] VS Code 图标已生成")
-else:
-    print("[devtop-init-fix] 图标生成跳过，依赖缺失或 SVG 下载失败")
+from PIL import Image
+img = Image.open("${ICON_SRC}").convert("RGBA")
+sizes = [16, 22, 24, 32, 36, 48, 64, 72, 96, 128, 192, 256, 512]
+for size in sizes:
+    outdir = f"/usr/share/icons/hicolor/{size}x{size}/apps"
+    os.makedirs(outdir, exist_ok=True)
+    img.resize((size, size), Image.LANCZOS).save(f"{outdir}/code.png", "PNG")
+img.resize((128, 128), Image.LANCZOS).save("/usr/share/pixmaps/code.png", "PNG")
+os.system("update-icon-caches /usr/share/icons/hicolor 2>/dev/null")
+print("[devtop-init-fix] VS Code 图标已生成")
 PY
+else
+    echo "[devtop-init-fix] 未找到内置图标，跳过"
+fi
 
 # 确保桌面目录存在
 mkdir -p /config/Desktop
