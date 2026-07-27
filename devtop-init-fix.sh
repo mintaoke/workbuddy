@@ -79,143 +79,60 @@ if [ ! -f "/config/.config/autostart/org.fcitx.Fcitx5.desktop" ]; then
     fi
 fi
 
-# ========== 修复 5: VSCode (code-server) 安装与配置 ==========
-# 确保 code-server 已安装、图标正确、启动器可用
+# ========== 修复 5: VS Code 桌面版安装与桌面快捷方式 ==========
+# 安装 Microsoft 官方 VS Code 桌面版（非 code-server Web 版）
+# 并在桌面上创建启动图标，用户双击即可使用
 
-echo "[devtop-init-fix] 检查 VSCode (code-server)..."
+echo "[devtop-init-fix] 检查 VS Code 桌面版..."
 
-if ! command -v code-server &>/dev/null; then
-    echo "[devtop-init-fix] code-server 未安装，正在安装..."
-    curl -fsSL https://code-server.dev/install.sh | sh
-    echo "[devtop-init-fix] code-server 安装完成"
+if ! command -v code &>/dev/null; then
+    echo "[devtop-init-fix] VS Code 未安装，正在安装桌面版..."
+    # 安装依赖
+    apt-get update -qq 2>/dev/null
+    apt-get install -y -qq wget gpg 2>/dev/null
+
+    # 添加 Microsoft APT 源
+    wget -qO- https://packages.microsoft.com/keys/microsoft.asc | \
+        gpg --dearmor > /etc/apt/trusted.gpg.d/microsoft.gpg
+    echo "deb [arch=amd64] https://packages.microsoft.com/repos/code stable main" \
+        > /etc/apt/sources.list.d/vscode.list
+
+    # 安装 VS Code
+    apt-get update -qq 2>/dev/null
+    apt-get install -y -qq code 2>/dev/null
+    echo "[devtop-init-fix] VS Code 桌面版安装完成"
 else
-    CODE_SERVER_VERSION=$(code-server --version 2>&1 | head -1 || echo "未知")
-    echo "[devtop-init-fix] code-server 已安装: ${CODE_SERVER_VERSION}"
+    CODE_VERSION=$(code --version 2>&1 | head -1 || echo "未知")
+    echo "[devtop-init-fix] VS Code 桌面版已安装: ${CODE_VERSION}"
 fi
 
-# 确保 code-server 配置目录存在
-CODE_SERVER_CONFIG_DIR="/config/.config/code-server"
-if [ ! -d "$CODE_SERVER_CONFIG_DIR" ]; then
-    mkdir -p "$CODE_SERVER_CONFIG_DIR"
-    chown -R 1000:1000 "$CODE_SERVER_CONFIG_DIR"
-fi
-
-# 写入默认 code-server 配置
-if [ ! -f "${CODE_SERVER_CONFIG_DIR}/config.yaml" ]; then
-    cat > "${CODE_SERVER_CONFIG_DIR}/config.yaml" << 'CODE_SERVER_EOF'
-bind-addr: 127.0.0.1:8443
-auth: password
-password: ${PASSWORD:-admin}
-cert: false
-CODE_SERVER_EOF
-    chown 1000:1000 "${CODE_SERVER_CONFIG_DIR}/config.yaml"
-    echo "[devtop-init-fix] code-server 配置已生成"
-fi
-
-# 创建 VSCode 图标
-# 使用 Wikimedia 上的官方 VSCode SVG 图标生成各尺寸 PNG
-VSCODE_SVG_URL="https://upload.wikimedia.org/wikipedia/commons/9/9a/Visual_Studio_Code_1.35_icon.svg"
-VSCODE_SVG="/usr/share/icons/hicolor/scalable/apps/code.svg"
-
-echo "[devtop-init-fix] 安装 VSCode 图标..."
-mkdir -p /usr/share/icons/hicolor/scalable/apps
-mkdir -p /usr/share/pixmaps
-
-# 下载 SVG 图标
-if curl -fsSL -A "Mozilla/5.0" -o "$VSCODE_SVG" "$VSCODE_SVG_URL" 2>/dev/null; then
-    cp "$VSCODE_SVG" /usr/share/pixmaps/code.svg
-    cp "$VSCODE_SVG" /usr/share/icons/hicolor/scalable/apps/code-server.svg
-    cp "$VSCODE_SVG" /usr/share/pixmaps/code-server.svg
-else
-    echo "[devtop-init-fix] SVG 下载失败，使用内置图标兜底..."
-fi
-
-# 确保 cairosvg 可用（用于 SVG 转 PNG）
-if ! python3 -c "import cairosvg" 2>/dev/null; then
-    echo "[devtop-init-fix] 安装 cairosvg..."
-    pip install cairosvg --quiet 2>/dev/null || true
-fi
-
-python3 - << 'PY'
-import os
-
-try:
-    import cairosvg
-    CAIRO = True
-except ImportError:
-    CAIRO = False
-
-from PIL import Image
-
-src = '/usr/share/icons/hicolor/scalable/apps/code.svg'
-img_rgba = None
-
-if os.path.exists(src) and CAIRO:
-    # 通过 cairosvg 生成最大尺寸后裁剪/缩放
-    tmp_png = '/tmp/vscode-src.png'
-    cairosvg.svg2png(url=src, write_to=tmp_png, output_width=512, output_height=512)
-    img_rgba = Image.open(tmp_png).convert('RGBA')
-else:
-    fallback = '/usr/lib/code-server/lib/vscode/extensions/copilot/assets/copilot.png'
-    if os.path.exists(fallback):
-        img = Image.open(fallback).convert('RGBA')
-        w, h = img.size
-        min_size = min(w, h)
-        left = (w - min_size) // 2
-        top = (h - min_size) // 2
-        img_rgba = img.crop((left, top, left + min_size, top + min_size))
-
-if img_rgba is not None:
-    sizes = [16, 22, 24, 32, 36, 48, 64, 72, 96, 128, 192, 256, 512]
-    for size in sizes:
-        outdir = f'/usr/share/icons/hicolor/{size}x{size}/apps'
-        os.makedirs(outdir, exist_ok=True)
-        resized = img_rgba.resize((size, size), Image.LANCZOS)
-        resized.save(f'{outdir}/code.png', 'PNG')
-        resized.save(f'{outdir}/code-server.png', 'PNG')
-    pixmaps = '/usr/share/pixmaps'
-    os.makedirs(pixmaps, exist_ok=True)
-    img_rgba.resize((128, 128), Image.LANCZOS).save(f'{pixmaps}/code.png', 'PNG')
-    img_rgba.resize((128, 128), Image.LANCZOS).save(f'{pixmaps}/code-server.png', 'PNG')
-
-os.system('update-icon-caches /usr/share/icons/hicolor')
-PY
-
-# 创建/更新 VSCode 启动器脚本
-LAUNCHER="/usr/local/bin/vscode-launcher"
-cat > "$LAUNCHER" << 'LAUNCHER_EOF'
-#!/usr/bin/env bash
-# VSCode 启动脚本
-if pgrep -x code-server >/dev/null 2>&1; then
-    echo "code-server 已在运行"
-else
-    code-server --bind-addr 0.0.0.0:8443 --auth none >/tmp/code-server.log 2>&1 &
-fi
-sleep 2
-xdg-open http://localhost:8443
-LAUNCHER_EOF
-chmod +x "$LAUNCHER"
-
-# 创建 code-server 桌面快捷方式（方便从桌面启动）
-DESKTOP_SHORTCUT="/config/Desktop/code-server.desktop"
+# 确保桌面目录存在
 mkdir -p /config/Desktop
-cat > "$DESKTOP_SHORTCUT" << 'DESKTOP_EOF'
+
+# 创建 VS Code 桌面快捷方式
+DESKTOP_SHORTCUT="/config/Desktop/code.desktop"
+if [ ! -f "$DESKTOP_SHORTCUT" ]; then
+    echo "[devtop-init-fix] 创建 VS Code 桌面快捷方式..."
+    cat > "$DESKTOP_SHORTCUT" << 'DESKTOP_EOF'
 [Desktop Entry]
 Version=1.0
 Type=Application
 Name=Visual Studio Code
-Comment=VSCode Web Editor
+Comment=Code Editing. Redefined.
 Icon=code
-Exec=/usr/local/bin/vscode-launcher
+Exec=/usr/share/code/code --no-sandbox --unity-launch %F
 Terminal=false
 StartupNotify=true
 Categories=Development;IDE;TextEditor;
-MimeType=text/plain;
+MimeType=text/plain;inode/directory;text/x-code-workspace;
+Keywords=vscode;
 DESKTOP_EOF
-chown 1000:1000 "$DESKTOP_SHORTCUT"
-chmod +x "$DESKTOP_SHORTCUT"
+    chown 1000:1000 "$DESKTOP_SHORTCUT"
+    chmod +x "$DESKTOP_SHORTCUT"
+    echo "[devtop-init-fix] VS Code 桌面快捷方式已创建"
+fi
 
-echo "[devtop-init-fix] VSCode 安装与配置完成。"
+echo "[devtop-init-fix] VS Code 桌面版配置完成。"
 
 # ========== 修复 6: SSH 服务配置 ==========
 # 配置 SSH 以支持 FinalShell / 终端连接
