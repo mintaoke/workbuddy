@@ -98,5 +98,10 @@ WorkBuddy-DevTop 部署信息
   docker compose up -d                       # 启动
   docker exec -it workbuddy-devtop /bin/bash # 进容器 shell
 
+💡 沙箱休眠后如何恢复:
+  - 容器已配置 restart: unless-stopped，沙箱唤醒后自动恢复
+  - 直接重新打开访问地址即可，无需手动操作
+  - 如需手动启动: cd ${SCRIPT_DIR} && docker compose up -d
+
 ============================================================
 EOF
