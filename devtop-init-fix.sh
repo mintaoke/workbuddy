@@ -134,7 +134,21 @@ fi
 
 echo "[devtop-init-fix] VS Code 桌面版配置完成。"
 
-# ========== 修复 6: SSH 服务配置 ==========
+# ========== 修复 6: Claude Code (claude) 安装 ==========
+# 安装 Anthropic 官方 Claude Code CLI 工具
+
+echo "[devtop-init-fix] 检查 Claude Code..."
+
+if ! command -v claude &>/dev/null; then
+    echo "[devtop-init-fix] Claude Code 未安装，正在安装..."
+    curl -fsSL https://claude.ai/install.sh | bash
+    echo "[devtop-init-fix] Claude Code 安装完成"
+else
+    CLAUDE_VERSION=$(claude --version 2>&1 | head -1 || echo "未知")
+    echo "[devtop-init-fix] Claude Code 已安装: ${CLAUDE_VERSION}"
+fi
+
+# ========== 修复 7: SSH 服务配置 ==========
 # 配置 SSH 以支持 FinalShell / 终端连接
 echo "[devtop-init-fix] 配置 SSH 服务..."
 
@@ -177,7 +191,7 @@ else
     echo "[devtop-init-fix] SSH 服务已在运行"
 fi
 
-# ========== 修复 7: Angular CLI / yargs ESM 兼容 ==========
+# ========== 修复 8: Angular CLI / yargs ESM 兼容 ==========
 # yargs v18 是纯 ESM 模块，Angular CLI 用 CJS require() 会导致 ERR_REQUIRE_ESM
 # 创建 CJS 桥接文件修复
 YARGS_HELPERS_DIR="/root/.nvm/versions/node/v22.13.1/lib/node_modules/@angular/cli/node_modules/yargs/helpers"
